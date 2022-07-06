@@ -1,6 +1,7 @@
+import { IPCMessage, IPCMessages } from 'common/ipcMessage';
 import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron';
 
-export type Channels = 'ipc-example';
+export type Channels = 'ipc-example' | IPCMessage;
 
 contextBridge.exposeInMainWorld('electron', {
   ipcRenderer: {
@@ -16,6 +17,14 @@ contextBridge.exposeInMainWorld('electron', {
     },
     once(channel: Channels, func: (...args: unknown[]) => void) {
       ipcRenderer.once(channel, (_event, ...args) => func(...args));
+    },
+  },
+  store: {
+    get(key: string) {
+      return ipcRenderer.sendSync(IPCMessages.ELECTRON_STORE_GET, key);
+    },
+    set(key: string, val: any) {
+      ipcRenderer.send(IPCMessages.ELECTRON_STORE_SET, key, val);
     },
   },
 });

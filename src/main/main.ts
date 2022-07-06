@@ -12,6 +12,8 @@ import path from 'path';
 import { app, BrowserWindow, shell, ipcMain } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
+import Store from 'electron-store';
+import { IPCMessages } from 'common/ipcMessage';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
 
@@ -23,6 +25,7 @@ export default class AppUpdater {
   }
 }
 
+const store = new Store();
 let mainWindow: BrowserWindow | null = null;
 
 ipcMain.on('ipc-example', async (event, arg) => {
@@ -135,3 +138,11 @@ app
     });
   })
   .catch(console.log);
+
+ipcMain.on(IPCMessages.ELECTRON_STORE_SET, async (_event, key, val) => {
+  store.set(key, val);
+});
+
+ipcMain.on(IPCMessages.ELECTRON_STORE_GET, async (event, key) => {
+  event.returnValue = store.get(key);
+});
